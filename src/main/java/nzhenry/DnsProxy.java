@@ -7,7 +7,6 @@ import io.netty.handler.codec.dns.*;
 import io.netty.resolver.dns.DnsNameResolver;
 
 import java.net.InetSocketAddress;
-import java.util.function.Consumer;
 
 public class DnsProxy extends SimpleChannelInboundHandler<DatagramDnsQuery> {
 
@@ -21,27 +20,16 @@ public class DnsProxy extends SimpleChannelInboundHandler<DatagramDnsQuery> {
     protected void channelRead0(ChannelHandlerContext context, DatagramDnsQuery query) {
         for(int i = 0; i < query.count(DnsSection.QUESTION); i++) {
             DnsQuestion question = query.recordAt(DnsSection.QUESTION, i);
-            askQuestion(question, r -> {
-                final DnsResponse response = getResponse(r, query);
-                context.writeAndFlush(response);
+            resolver.query(question).addListener(f -> {
+                AddressedEnvelope<DnsResponse, InetSocketAddress> envelope;
+                envelope = (AddressedEnvelope<DnsResponse, InetSocketAddress>)f.getNow();
+                context.writeAndFlush(getResponse(envelope.content(), query));
             });
         }
     }
 
-    private void askQuestion(DnsQuestion question, Consumer<DnsResponse> callback) {
-        resolver.query(question).addListener(f -> {
-            AddressedEnvelope<DnsResponse, InetSocketAddress> envelope;
-            envelope = (AddressedEnvelope<DnsResponse, InetSocketAddress>)f.getNow();
-            DnsResponse response = envelope.content();
-            callback.accept(response);
-        });
-    }
-
     private DnsResponse getResponse(DnsResponse serverResponse, DatagramDnsQuery query) {
         DnsResponse response = new DatagramDnsResponse(query.recipient(), query.sender(), query.id());
-        if(serverResponse == null) {
-            return response;
-        }
         copySections(serverResponse, response);
         return response;
     }
