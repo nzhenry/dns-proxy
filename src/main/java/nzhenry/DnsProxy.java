@@ -18,14 +18,12 @@ public class DnsProxy extends SimpleChannelInboundHandler<DatagramDnsQuery> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext context, DatagramDnsQuery query) {
-        for(int i = 0; i < query.count(DnsSection.QUESTION); i++) {
-            DnsQuestion question = query.recordAt(DnsSection.QUESTION, i);
-            resolver.query(question).addListener(f -> {
-                AddressedEnvelope<DnsResponse, InetSocketAddress> envelope;
-                envelope = (AddressedEnvelope<DnsResponse, InetSocketAddress>)f.getNow();
-                context.writeAndFlush(getResponse(envelope.content(), query));
-            });
-        }
+        DnsQuestion question = query.recordAt(DnsSection.QUESTION, 0);
+        resolver.query(question).addListener(f -> {
+            AddressedEnvelope<DnsResponse, InetSocketAddress> envelope;
+            envelope = (AddressedEnvelope<DnsResponse, InetSocketAddress>)f.getNow();
+            context.writeAndFlush(getResponse(envelope.content(), query));
+        });
     }
 
     private DnsResponse getResponse(DnsResponse serverResponse, DatagramDnsQuery query) {
