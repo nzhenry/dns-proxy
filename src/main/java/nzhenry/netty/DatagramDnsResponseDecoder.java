@@ -6,18 +6,20 @@
 package nzhenry.netty;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelHandler.Sharable;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.handler.codec.CorruptedFrameException;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.dns.*;
 import io.netty.util.internal.ObjectUtil;
+
 import java.net.InetSocketAddress;
 import java.util.List;
 
 @Sharable
 public class DatagramDnsResponseDecoder extends MessageToMessageDecoder<DatagramPacket> {
+
     private final DnsRecordDecoder recordDecoder;
 
     public DatagramDnsResponseDecoder() {
@@ -25,11 +27,11 @@ public class DatagramDnsResponseDecoder extends MessageToMessageDecoder<Datagram
     }
 
     public DatagramDnsResponseDecoder(DnsRecordDecoder recordDecoder) {
-        this.recordDecoder = (DnsRecordDecoder)ObjectUtil.checkNotNull(recordDecoder, "recordDecoder");
+        this.recordDecoder = ObjectUtil.checkNotNull(recordDecoder, "recordDecoder");
     }
 
     protected void decode(ChannelHandlerContext ctx, DatagramPacket packet, List<Object> out) throws Exception {
-        ByteBuf buf = (ByteBuf)packet.content();
+        ByteBuf buf = packet.content();
         DnsResponse response = newResponse(packet, buf);
         boolean success = false;
 
@@ -53,7 +55,7 @@ public class DatagramDnsResponseDecoder extends MessageToMessageDecoder<Datagram
 
     }
 
-    private static DnsResponse newResponse(DatagramPacket packet, ByteBuf buf) {
+    public static DnsResponse newResponse(DatagramPacket packet, ByteBuf buf) {
         int id = buf.readUnsignedShort();
         int flags = buf.readUnsignedShort();
         if (flags >> 15 == 0) {

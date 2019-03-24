@@ -13,6 +13,11 @@ import java.net.InetSocketAddress;
 
 public class DatagramDnsResponse extends io.netty.handler.codec.dns.DatagramDnsResponse {
 
+    public DatagramDnsResponse(DatagramPacket packet, InetSocketAddress sender, InetSocketAddress recipient, int id) {
+        super(sender, recipient, id);
+        this.packet = packet;
+    }
+
     public DatagramDnsResponse(DatagramPacket packet, InetSocketAddress sender, InetSocketAddress recipient, int id, DnsOpCode opCode, DnsResponseCode responseCode) {
         super(sender, recipient, id, opCode, responseCode);
         this.packet = packet;

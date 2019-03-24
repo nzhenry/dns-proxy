@@ -9,16 +9,13 @@ import io.netty.util.NetUtil;
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
 import io.netty.util.internal.PlatformDependent;
-import java.net.Inet4Address;
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
+
+import java.net.*;
 import java.util.HashMap;
 import java.util.Map;
 
 final class DnsQueryContextManager {
-    final Map<InetSocketAddress, IntObjectMap<DnsQueryContext>> map = new HashMap();
+    private final Map<InetSocketAddress, IntObjectMap<DnsQueryContext>> map = new HashMap<>();
 
     DnsQueryContextManager() {
     }
@@ -26,7 +23,6 @@ final class DnsQueryContextManager {
     int add(DnsQueryContext qCtx) {
         IntObjectMap<DnsQueryContext> contexts = this.getOrCreateContextMap(qCtx.nameServerAddr());
         int id = PlatformDependent.threadLocalRandom().nextInt(65535) + 1;
-        int maxTries = 131070;
         int tries = 0;
         synchronized(contexts) {
             while(contexts.containsKey(id)) {
@@ -47,7 +43,7 @@ final class DnsQueryContextManager {
         DnsQueryContext qCtx;
         if (contexts != null) {
             synchronized(contexts) {
-                qCtx = (DnsQueryContext)contexts.get(id);
+                qCtx = contexts.get(id);
             }
         } else {
             qCtx = null;
@@ -62,26 +58,24 @@ final class DnsQueryContextManager {
             return null;
         } else {
             synchronized(contexts) {
-                return (DnsQueryContext)contexts.remove(id);
+                return contexts.remove(id);
             }
         }
     }
 
     private IntObjectMap<DnsQueryContext> getContextMap(InetSocketAddress nameServerAddr) {
-        Map var2 = this.map;
         synchronized(this.map) {
-            return (IntObjectMap)this.map.get(nameServerAddr);
+            return this.map.get(nameServerAddr);
         }
     }
 
     private IntObjectMap<DnsQueryContext> getOrCreateContextMap(InetSocketAddress nameServerAddr) {
-        Map var2 = this.map;
         synchronized(this.map) {
-            IntObjectMap<DnsQueryContext> contexts = (IntObjectMap)this.map.get(nameServerAddr);
+            IntObjectMap<DnsQueryContext> contexts = this.map.get(nameServerAddr);
             if (contexts != null) {
                 return contexts;
             } else {
-                IntObjectMap<DnsQueryContext> newContexts = new IntObjectHashMap();
+                IntObjectMap<DnsQueryContext> newContexts = new IntObjectHashMap<>();
                 InetAddress a = nameServerAddr.getAddress();
                 int port = nameServerAddr.getPort();
                 this.map.put(nameServerAddr, newContexts);
