@@ -8,15 +8,20 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.handler.codec.dns.DatagramDnsQueryDecoder;
-import io.netty.handler.codec.dns.DatagramDnsResponseEncoder;
-import io.netty.resolver.dns.DnsNameResolver;
-import io.netty.resolver.dns.DnsNameResolverBuilder;
+import nzhenry.netty.DatagramDnsResponseEncoder;
+import nzhenry.netty.DnsNameResolver;
+import nzhenry.netty.DnsNameResolverBuilder;
 
 public class Application {
 
     static final int PORT = 53;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
+        start();
+//        new EchoServer(PORT).run();
+    }
+
+    public static void start() {
         EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
 
         DnsNameResolver resolver = new DnsNameResolverBuilder(eventLoopGroup.next())
@@ -29,7 +34,8 @@ public class Application {
                     .channel(NioDatagramChannel.class)
                     .handler(new ChannelInitializer<NioDatagramChannel>() {
                         @Override
-                        protected void initChannel(NioDatagramChannel nioDatagramChannel) {
+                        protected void initChannel(NioDatagramChannel nioDatagramChannel) throws InterruptedException {
+//                            nioDatagramChannel.pipeline().addLast(new DnsServerMessageHandler());
                             nioDatagramChannel.pipeline().addLast(new DatagramDnsQueryDecoder());
                             nioDatagramChannel.pipeline().addLast(new DatagramDnsResponseEncoder());
                             nioDatagramChannel.pipeline().addLast(new DnsProxy(resolver));
