@@ -68,7 +68,7 @@ public class DatagramDnsResponseEncoder extends MessageToMessageEncoder<Addresse
 //        writeOutBytes(buf);
 
 
-        out.add(new DatagramPacket(buf, recipient, (InetSocketAddress)null));
+//        out.add(new DatagramPacket(buf, recipient, (InetSocketAddress)null));
     }
 
     private void writeOutBytes(ByteBuf buf) {
