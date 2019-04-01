@@ -37,35 +37,33 @@ public class DatagramDnsResponseEncoder extends MessageToMessageEncoder<Addresse
         InetSocketAddress recipient = in.recipient();
         DatagramDnsResponse response = (DatagramDnsResponse)in.content();
 
-        ByteBuf buf1 = response.getPacket().content().retainedDuplicate();
-//        writeOutBytes(buf1);
+        ByteBuf buf = response.getPacket().content().retainedDuplicate();
+//        writeOutBytes(buf);
+        buf.readerIndex(0);
+        buf.writerIndex(0);
+        int responseId = response.id();
+        buf.writeShort(responseId);
+        buf.resetWriterIndex();
+
+        out.add(new DatagramPacket(buf, recipient, null));
 
 
-//        buf1.readerIndex(0);
-//        buf1.writerIndex(0);
-//        int responseId = response.id();
-//        buf1.writeShort(responseId);
-//        buf1.resetWriterIndex();
-
-//        out.add(new DatagramPacket(buf1, recipient, null));
-
-
-        ByteBuf buf = this.allocateBuffer(ctx, in);
-        boolean success = false;
-
-        try {
-            encodeHeader(response, buf);
-            this.encodeQuestions(response, buf);
-            this.encodeRecords(response, DnsSection.ANSWER, buf);
-            this.encodeRecords(response, DnsSection.AUTHORITY, buf);
-            this.encodeRecords(response, DnsSection.ADDITIONAL, buf);
-            success = true;
-        } finally {
-            if (!success) {
-                buf.release();
-            }
-
-        }
+//        ByteBuf buf = this.allocateBuffer(ctx, in);
+//        boolean success = false;
+//
+//        try {
+//            encodeHeader(response, buf);
+//            this.encodeQuestions(response, buf);
+//            this.encodeRecords(response, DnsSection.ANSWER, buf);
+//            this.encodeRecords(response, DnsSection.AUTHORITY, buf);
+//            this.encodeRecords(response, DnsSection.ADDITIONAL, buf);
+//            success = true;
+//        } finally {
+//            if (!success) {
+//                buf.release();
+//            }
+//
+//        }
 
 //        writeOutBytes(buf);
 
