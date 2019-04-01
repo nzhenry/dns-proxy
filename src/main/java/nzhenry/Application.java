@@ -9,6 +9,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.handler.codec.dns.DatagramDnsQueryDecoder;
 import nzhenry.netty.DatagramDnsResponseEncoder;
+//import io.netty.handler.codec.dns.DatagramDnsResponseEncoder;
+import nzhenry.netty.DefaultDnsRecordEncoder;
 import nzhenry.netty.DnsNameResolver;
 import nzhenry.netty.DnsNameResolverBuilder;
 
@@ -35,9 +37,8 @@ public class Application {
                     .handler(new ChannelInitializer<NioDatagramChannel>() {
                         @Override
                         protected void initChannel(NioDatagramChannel nioDatagramChannel) throws InterruptedException {
-//                            nioDatagramChannel.pipeline().addLast(new DnsServerMessageHandler());
                             nioDatagramChannel.pipeline().addLast(new DatagramDnsQueryDecoder());
-                            nioDatagramChannel.pipeline().addLast(new DatagramDnsResponseEncoder());
+                            nioDatagramChannel.pipeline().addLast(new DatagramDnsResponseEncoder(new DefaultDnsRecordEncoder()));
                             nioDatagramChannel.pipeline().addLast(new DnsProxy(resolver));
                         }
                     })
